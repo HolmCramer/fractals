@@ -8,17 +8,21 @@ math.config({
 
 
 const canvas = document.querySelector(".mandelbrot-canv");
-//const width = (canvas.width = window.innerWidth);
-//const height = (canvas.height = window.innerHeight);
-const width = (canvas.width = 400);
-const height = (canvas.height = 300);
+const width = (canvas.width = window.innerWidth);
+const height = (canvas.height = window.innerHeight);
+//const width = (canvas.width = 400);
+//const height = (canvas.height = 300);
 const ctx = canvas.getContext("2d");
-const MAX_ITERATIONS = 255;
-let xScale = 1 / 100;
-let yScale = 1 / 100;
-let scaleMatrix = [xScale, 0, 0, 0, yScale, 0, 0, 0];
+const MAX_ITERATIONS = 100;
+
+//let xScale = 1 / 100;
+//let yScale = 1 / 100;
+//let scaleMatrix = [xScale, 0, 0, 0, yScale, 0, 0, 0];
+
 const valueMatrix = initValueMatrix();
-const ZOOM = 100;
+const ZOOM = 1000;
+const X_OFFSET = 0;
+const Y_OFFSET = 0;
 
 function initValueMatrix() {
 	const valueMatrix = new Array(height);
@@ -65,14 +69,14 @@ function drawPixel(x, y, color) {
 }
 
 function calculate(x, c, currentDepth) {
+	if (currentDepth > MAX_ITERATIONS) {
+		return { complexPoint: x, maxDepth: currentDepth };
+	}
+	if (math.re(x) === Infinity || math.im(x) === Infinity || math.re(x) === -Infinity || math.im(x) === -Infinity) {
+		return { complexPoint: x, maxDepth: currentDepth };
+	}
 	x = math.add(math.pow(x, 2), c);
 	currentDepth++;
-	if (math.re(x) === Infinity || math.im(x) === Infinity || math.re(x) === -Infinity || math.im(x) === -Infinity) {
-		return x;
-	}
-	if (currentDepth > MAX_ITERATIONS) {
-		return x;
-	}
 	return calculate(x, c, currentDepth);
 }
 
@@ -84,32 +88,31 @@ function isDiverging(complexPoint) {
 	}
 }
 
-function fillValueMatrix() {
-	let complexPoint;
-
-	for (let yCor = -(height / 2); yCor <= height / 2; yCor++) {
-		for (let xCor = -(width / 2); xCor <= width / 2; xCor++) {
-			complexPoint = calculate(0, math.complex(math.divide(xCor, ZOOM), math.divide(yCor, ZOOM)), 0);
-			if (isDiverging(complexPoint)) {
-				valueMatrix[yCor + (height / 2)][xCor + (width / 2)] = "rgb(0 0 0)";
-			} else {
-				valueMatrix[yCor + (height / 2)][xCor + (width / 2)] = "rgb(0 255 255)";
-			}
-		}
+function decideColor(maxDepth) {
+	let color;
+	switch (maxDepth % 2 === 0) {
+		case true:
+			color = `rgb(0 0 ${3 * maxDepth})`;
+			return color;
+		case false:
+			color = `rgb(${3 * maxDepth} 0 0)`;
+			return color;
 	}
 }
 
-function OLDrenderFrame() {
-	let complexPoint;
-
-	for (let yCor = -(height / 2); yCor <= height / 2; yCor++) {
-		for (let xCor = -(width / 2); xCor <= width / 2; xCor++) {
-			complexPoint = calculate(0, math.complex(math.divide(xCor, ZOOM), math.divide(yCor, ZOOM)), 0);
-
+function fillValueMatrix() {
+	for (let yCor = -(height / 2) + Y_OFFSET; yCor <= height / 2 + Y_OFFSET; yCor++) {
+		for (let xCor = -(width / 2) + X_OFFSET; xCor <= width / 2 + X_OFFSET; xCor++) {
+			let { complexPoint, maxDepth } = calculate(0, math.complex(math.divide(xCor, ZOOM), math.divide(yCor, ZOOM)), 0);
 			if (isDiverging(complexPoint)) {
-				drawPixel(xCor, yCor, "rgb(0 0 0)");
+				//valueMatrix[yCor + (height / 2) - Y_OFFSET][xCor + (width / 2) - X_OFFSET] = decideColor(maxDepth);
+				//if (maxDepth > 15) {
+				valueMatrix[yCor + (height / 2) - Y_OFFSET][xCor + (width / 2) - X_OFFSET] = `rgb(0 0 ${3 * maxDepth})`;
+				//} else {
+				//	valueMatrix[yCor + (height / 2) - Y_OFFSET][xCor + (width / 2) - X_OFFSET] = `rgb(${3 * maxDepth} 0 0)`;
+				//}
 			} else {
-				drawPixel(xCor, yCor, "rgb(0 255 255)");
+				valueMatrix[yCor + (height / 2) - Y_OFFSET][xCor + (width / 2) - X_OFFSET] = `rgb(0 0 0)`;
 			}
 		}
 	}
