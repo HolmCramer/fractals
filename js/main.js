@@ -119,7 +119,6 @@ function renderFrame() {
 	for (let yCor = -(height / 2); yCor <= height / 2; yCor++) {
 		for (let xCor = -(width / 2); xCor <= width / 2; xCor++) {
 			drawPixel(xCor, yCor, valueMatrix[yCor + (height / 2)][xCor + (width / 2)]);
-			//console.log(valueMatrix[yCor + (height / 2)][xCor + (width / 2)]);
 		}
 	}
 }
