@@ -38,4 +38,13 @@ class Complex {
 	conjugate() {
 		return new Complex(this.real, -this.imaginary);
 	}
+
+	isDiverging() {
+		if (this.real === Infinity || this.imaginary === Infinity || this.real === -Infinity || this.imaginary === -Infinity) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
+export default Complex;
