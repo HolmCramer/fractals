@@ -19,6 +19,13 @@ class Complex {
 		);
 	}
 
+	square() {
+		return new Complex(
+			this.real * this.real - this.imaginary * this.imaginary,
+			this.real * this.imaginary + this.imaginary * this.real
+		);
+	}
+
 	divide(other) {
 		const denominator = other.real * other.real + other.imaginary * other.imaginary;
 		return new Complex(

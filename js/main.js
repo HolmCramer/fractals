@@ -1,8 +1,10 @@
 import Complex from "../js/classes/complex.js";
 
 const canvas = document.querySelector(".mandelbrot-canv");
-const width = (canvas.width = window.innerWidth);
-const height = (canvas.height = window.innerHeight);
+//const width = (canvas.width = window.innerWidth);
+//const height = (canvas.height = window.innerHeight);
+const width = (canvas.width = 400);
+const height = (canvas.height = 300);
 const ctx = canvas.getContext("2d");
 
 function initCanvas() {
@@ -26,49 +28,35 @@ function drawCoordinates() {
 
 }
 
-function degToRad(degrees) {
-	return (degrees * Math.PI) / 180;
-}
-
-function rand(min, max) {
-	return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function drawCircle() {
-	ctx.fillStyle = "rgb(0 0 255)";
-	ctx.beginPath();
-	ctx.arc(150, 106, 50, degToRad(0), degToRad(360), false);
-	ctx.fill();
-}
-
-function drawTriangle() {
-	ctx.fillStyle = "rgb(255 0 0)";
-	ctx.beginPath();
-	ctx.moveTo(50, 50);
-	ctx.lineTo(150, 50);
-	const triHeight = 50 * Math.tan(degToRad(60));
-	ctx.lineTo(100, 50 + triHeight);
-	ctx.lineTo(50, 50);
-	ctx.fill();
-
-}
-
 function drawPixel(x, y, color) {
 	ctx.lineWidth = 1;
 	ctx.fillStyle = color;
 	ctx.fillRect(x, y, 1, 1);
 }
 
-function calculate(complexPoint, currentDepth, maxDepth) {
-	complexPoint = complexPoint?.multiply(complexPoint);
+function calculate(x, c, currentDepth, maxDepth) {
+	x = math.add(math.pow(x, 2), c);
 	currentDepth++;
-	if (complexPoint.real === Infinity || complexPoint.imaginary === Infinity || complexPoint.real === -Infinity || complexPoint.imaginary === -Infinity) {
-		return complexPoint;
+	if (math.re(x) === Infinity || math.im(x) === Infinity || math.re(x) === -Infinity || math.im(x) === -Infinity) {
+		return x;
 	}
 	if (currentDepth > maxDepth) {
-		return complexPoint;
+		return x;
 	}
-	return calculate(complexPoint, currentDepth, maxDepth);
+	return calculate(x, c, currentDepth, maxDepth);
+}
+
+function isDiverging(complexPoint) {
+	//if (math.re(complexPoint) === Infinity || math.im(complexPoint) === Infinity || math.re(complexPoint) === -Infinity || math.im(complexPoint) === -Infinity) {
+	//	console.log("diverge");
+	//	return true;
+	if (math.re(complexPoint) >= Number.MAX_VALUE || math.im(complexPoint) >= Number.MAX_VALUE || math.re(complexPoint) <= Number.MIN_VALUE || math.im(complexPoint) <= Number.MIN_VALUE) {
+		console.log("diverge");
+		return true;
+	} else {
+		console.log("converge")
+		return false;
+	}
 }
 
 function renderFrame() {
@@ -76,13 +64,12 @@ function renderFrame() {
 
 	for (let yCor = -(height / 2); yCor <= height / 2; yCor++) {
 		for (let xCor = -(width / 2); xCor <= width / 2; xCor++) {
-			complexPoint = calculate(new Complex(xCor, yCor), 0, 20);
+			complexPoint = calculate(0, math.complex(xCor, yCor), 0, 7);
 
-			if (complexPoint.isDiverging()) {
-				drawPixel(xCor, yCor, "rgb(255 0 0)");
+			if (isDiverging(complexPoint)) {
+				drawPixel(xCor, yCor, "rgb(0 0 0)");
 			} else {
-				console.log("converging");
-				drawPixel(xCor, yCor, "rgb(0 255 0)");
+				drawPixel(xCor, yCor, "rgb(0 255 255)");
 			}
 		}
 	}
@@ -90,10 +77,9 @@ function renderFrame() {
 
 function draw() {
 	renderFrame();
-	drawCoordinates();
-	drawPixel(50, 50, "rgb(0 0 255)");
+	//drawCoordinates();
 
-	requestAnimationFrame(draw);
+	//requestAnimationFrame(draw);
 }
 
 function main() {
