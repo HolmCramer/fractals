@@ -1,4 +1,11 @@
-import Complex from "../js/classes/complex.js";
+math.config({
+	number: 'BigNumber',      // Default type of number
+	// 'number' (default), 'BigNumber', or 'Fraction'
+	precision: 64,            // Number of significant digits for BigNumbers
+	relTol: 1e-60,
+	absTol: 1e-63
+});
+
 
 const canvas = document.querySelector(".mandelbrot-canv");
 //const width = (canvas.width = window.innerWidth);
@@ -6,9 +13,32 @@ const canvas = document.querySelector(".mandelbrot-canv");
 const width = (canvas.width = 400);
 const height = (canvas.height = 300);
 const ctx = canvas.getContext("2d");
+const MAX_ITERATIONS = 255;
+let xScale = 1 / 100;
+let yScale = 1 / 100;
+let scaleMatrix = [xScale, 0, 0, 0, yScale, 0, 0, 0];
+const valueMatrix = initValueMatrix();
+const ZOOM = 100;
+
+function initValueMatrix() {
+	const valueMatrix = new Array(height);
+
+	for (let column = 0; column <= height; column++) {
+		valueMatrix[column] = new Array(width);
+	}
+
+	for (let column = 0; column <= height; column++) {
+		for (let row = 0; row <= width; row++) {
+			valueMatrix[column][row] = "rgb(0 0 0)";
+		}
+	}
+
+	return valueMatrix;
+}
+
 
 function initCanvas() {
-	ctx.fillStyle = "rgb(0 0 0)";
+	ctx.fillStyle = "rgb(255 255 255)";
 	ctx.fillRect(0, 0, width, height);
 	ctx.translate(width / 2, height / 2);
 }
@@ -34,43 +64,62 @@ function drawPixel(x, y, color) {
 	ctx.fillRect(x, y, 1, 1);
 }
 
-function calculate(x, c, currentDepth, maxDepth) {
+function calculate(x, c, currentDepth) {
 	x = math.add(math.pow(x, 2), c);
 	currentDepth++;
 	if (math.re(x) === Infinity || math.im(x) === Infinity || math.re(x) === -Infinity || math.im(x) === -Infinity) {
 		return x;
 	}
-	if (currentDepth > maxDepth) {
+	if (currentDepth > MAX_ITERATIONS) {
 		return x;
 	}
-	return calculate(x, c, currentDepth, maxDepth);
+	return calculate(x, c, currentDepth);
 }
 
 function isDiverging(complexPoint) {
-	//if (math.re(complexPoint) === Infinity || math.im(complexPoint) === Infinity || math.re(complexPoint) === -Infinity || math.im(complexPoint) === -Infinity) {
-	//	console.log("diverge");
-	//	return true;
-	if (math.re(complexPoint) >= Number.MAX_VALUE || math.im(complexPoint) >= Number.MAX_VALUE || math.re(complexPoint) <= Number.MIN_VALUE || math.im(complexPoint) <= Number.MIN_VALUE) {
-		console.log("diverge");
+	if (math.re(complexPoint) === Infinity || math.im(complexPoint) === Infinity || math.re(complexPoint) === -Infinity || math.im(complexPoint) === -Infinity) {
 		return true;
 	} else {
-		console.log("converge")
 		return false;
 	}
 }
 
-function renderFrame() {
+function fillValueMatrix() {
 	let complexPoint;
 
 	for (let yCor = -(height / 2); yCor <= height / 2; yCor++) {
 		for (let xCor = -(width / 2); xCor <= width / 2; xCor++) {
-			complexPoint = calculate(0, math.complex(xCor, yCor), 0, 7);
+			complexPoint = calculate(0, math.complex(math.divide(xCor, ZOOM), math.divide(yCor, ZOOM)), 0);
+			if (isDiverging(complexPoint)) {
+				valueMatrix[yCor + (height / 2)][xCor + (width / 2)] = "rgb(0 0 0)";
+			} else {
+				valueMatrix[yCor + (height / 2)][xCor + (width / 2)] = "rgb(0 255 255)";
+			}
+		}
+	}
+}
+
+function OLDrenderFrame() {
+	let complexPoint;
+
+	for (let yCor = -(height / 2); yCor <= height / 2; yCor++) {
+		for (let xCor = -(width / 2); xCor <= width / 2; xCor++) {
+			complexPoint = calculate(0, math.complex(math.divide(xCor, ZOOM), math.divide(yCor, ZOOM)), 0);
 
 			if (isDiverging(complexPoint)) {
 				drawPixel(xCor, yCor, "rgb(0 0 0)");
 			} else {
 				drawPixel(xCor, yCor, "rgb(0 255 255)");
 			}
+		}
+	}
+}
+
+function renderFrame() {
+	for (let yCor = -(height / 2); yCor <= height / 2; yCor++) {
+		for (let xCor = -(width / 2); xCor <= width / 2; xCor++) {
+			drawPixel(xCor, yCor, valueMatrix[yCor + (height / 2)][xCor + (width / 2)]);
+			//console.log(valueMatrix[yCor + (height / 2)][xCor + (width / 2)]);
 		}
 	}
 }
@@ -84,8 +133,9 @@ function draw() {
 
 function main() {
 	initCanvas();
+	initValueMatrix();
+	fillValueMatrix();
 	draw();
-
 }
 
 main();
