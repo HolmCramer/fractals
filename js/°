@@ -13,7 +13,7 @@ const height = (canvas.height = window.innerHeight);
 //const width = (canvas.width = 400);
 //const height = (canvas.height = 300);
 const ctx = canvas.getContext("2d");
-const MAX_ITERATIONS = 200;
+const MAX_ITERATIONS = 50;
 
 //let xScale = 1 / 100;
 //let yScale = 1 / 100;
@@ -21,10 +21,9 @@ const MAX_ITERATIONS = 200;
 
 const valueMatrix = initValueMatrix();
 const colorSpectrum = initColorSpectrum();
-const ZOOM = 200;
+const ZOOM = 400;
 const X_OFFSET = 0;
 const Y_OFFSET = 0;
-const COLOR_OFFSET = 70;
 
 function initValueMatrix() {
 	const valueMatrix = new Array(height);
@@ -71,7 +70,7 @@ function drawPixel(x, y, color) {
 }
 
 function initColorSpectrum() {
-	let colorScale = chroma.scale(['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'red']).colors(100);
+	let colorScale = chroma.scale(['red', 'orange', 'yellow', 'green', 'blue', 'purple']).colors(25);
 
 	for (let i = 0; i < colorScale.length; i++) {
 		colorScale[i] = chroma(colorScale[i]).rgb();
@@ -94,13 +93,23 @@ function initColorSpectrum() {
 		}
 	}
 
-	let colorScaleRGBBig = Array(10 * colorScaleRGB.length);
+	let colorScaleRGBBig = Array(40 * colorScaleRGB.length);
 
-	for (let i = 0; i < 10; i++) {
+	for (let i = 0; i < colorScaleRGBBig.length; i++) {
 		for (let j = 0; j < colorScaleRGB.length; j++) {
+			console.log(i, j)
 			colorScaleRGBBig[j + colorScaleRGB.length * i] = colorScaleRGB[j];
 		}
+		//console.log(colorScaleRGBBig[i]);
 	}
+
+	for (let element in colorScaleRGB) {
+		console.log(element[element]);
+	}
+
+	console.log(colorScaleRGBBig.length);
+
+
 	return colorScaleRGBBig;
 }
 
@@ -144,7 +153,7 @@ function fillValueMatrix() {
 				//valueMatrix[yCor + (height / 2) - Y_OFFSET][xCor + (width / 2) - X_OFFSET] = decideColor(maxDepth);
 				//if (maxDepth > 15) {
 				//valueMatrix[yCor + (height / 2) - Y_OFFSET][xCor + (width / 2) - X_OFFSET] = `rgb(0 0 ${3 * maxDepth})`;
-				valueMatrix[yCor + (height / 2) - Y_OFFSET][xCor + (width / 2) - X_OFFSET] = colorSpectrum[maxDepth + COLOR_OFFSET];
+				valueMatrix[yCor + (height / 2) - Y_OFFSET][xCor + (width / 2) - X_OFFSET] = colorSpectrum[maxDepth];
 				//} else {
 				//	valueMatrix[yCor + (height / 2) - Y_OFFSET][xCor + (width / 2) - X_OFFSET] = `rgb(${3 * maxDepth} 0 0)`;
 				//}
